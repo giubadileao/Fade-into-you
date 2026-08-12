@@ -1,4 +1,4 @@
-document .addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
   
 const botao = document.getElementById("botao");
 const telaInicial = document.querySelector(".tela-inicial");
