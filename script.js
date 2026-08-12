@@ -1,13 +1,6 @@
-document.addEventListener("DOMContentLoaded", function () {
-  
-const botao = document.getElementById("botao");
-const telaInicial = document.querySelector(".tela-inicial");
-const videoContainer = document.getElementById("videoContainer");
+function tocarVideo() {
+document.querySelector(".tela-inicial").style.display = "none";
+document.getElementById("videoContainer").style.display = "flex";
 const video = document.getElementById("video");
-
-botao.addEventListener("click", function() {
-  telaInicial.style.display = "none";
-  videoContainer.style.display = "flex";
   video.play();
-});
-});
+}
