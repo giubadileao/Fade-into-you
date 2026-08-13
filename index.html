@@ -1,30 +1,77 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fade Into You</title>
-    <link rel="stylesheet" href="style.css">
-  </head>
-  <body>
-    <main class="tela-inicial">
-      <div class="conteudo">
-        <p class="frase">
-          se eu pudesse transformar meus sentimentos em uma música...
-        </p>
-        <button id="botao" onclick="tocarVideo()">
-          𝄞 ouvir
-        </button>
-      </div>
-    </main>
-    <section class="video-container" id="videoContainer" style="display:none;">
-      <video id="video" controls playsinline>
-        <source src="media/video.mp4" type="video/mp4">
-        Seu navegador não suporta vídeo.
-      </video>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Thoughts Library</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="biblioteca" aria-label="Biblioteca Noturna">
+    <div class="lua" aria-hidden="true"></div>
+
+    <section class="introducao" id="introducao">
+      <p class="pequeno">Get ready to enter my thoughts...</p>
+      <h1>some stories are meant to be felt.</h1>
+      <button id="entrar" class="pequeno" type="button">⏾ entrar</button>
     </section>
 
-    <script src="script.js"></script>
+    <section id="estante" class="estante" aria-hidden="true">
+      <ul>
+        <li>
+          <button class="livro" type="button" data-livro="FourthWing"
+            data-titulo="Fouth Wing"
+            data-frase="There is nowhere in the world you can go where I won't find you, Violence."
+            data-musica="Make you mine"
+            data-artista="Madison Beer">Fouth Wing</button>
+        </li>
+        <li>
+          <button class="livro" type="button" data-livro="TheCruelPrince"
+            data-titulo="The Cruel Prince"
+            data-frase="My sweet nemesis, kiss me until I grow tired of your kiss."
+            data-musica="Lilith"
+            data-artista="Saint Avangeline">The Cruel Prince</button>
+        </li>
+        <li>
+          <button class="livro" type="button" data-livro="Hideaway"
+            data-titulo="Hideaway"
+            data-frase="The weak are the meat that the strong eat."
+            data-musica="Church"
+            data-artista="Chase Atlantic">Hideaway</button>
+        </li>
+        <li>
+          <button class="livro" type="button" data-livro="DevoçãoSangria"
+            data-titulo="Devoção Sangria"
+            data-frase="moya ved'ma"
+            data-musica="Haunted"
+            data-artista="Beyonce">Devoção Sangria</button>
+        </li>
+      </ul>
+    </section>
 
-  </body>
+    <aside id="paginaLivro" class="pagina-livro" aria-hidden="true" role="dialog" aria-modal="true">
+      <button id="fechar" class="fechar" type="button" aria-label="Fechar">×</button>
+
+      <div class="conteudo-livro">
+        <div class="numero">Capítulo 1</div>
+        <h2 id="tituloLivro">Título do Livro</h2>
+        <p id="fraseLivro" class="frase">Uma frase que pertence ao livro selecionado.</p>
+
+        <div class="musica" aria-label="Área de música">
+          <button id="play" class="pequeno" type="button" aria-pressed="false">▶︎</button>
+          <div class="info">
+            <span id="nomeMusica">Nome da música</span>
+            <span class="pequeno artista" id="artistaMusica">Artista</span>
+          </div>
+
+          <div id="luaMusica" class="lua-musica" aria-hidden="true"></div>
+        </div>
+
+      </div>
+    </aside>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
 </html>
