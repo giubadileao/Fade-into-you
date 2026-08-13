@@ -2,7 +2,7 @@
 // - mostra a estante ao clicar em #entrar
 // - abre a página do livro ao clicar em .livro
 // - preenche título, frase, música, artista
-// - controla play/pause e estado visual de #luaMusica
+// - controla play/pause e animação de #luaMusica
 
 document.addEventListener('DOMContentLoaded', () => {
   const entrarBtn = document.getElementById('entrar');
@@ -23,10 +23,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const livros = Array.from(document.querySelectorAll('.livro'));
 
-  // Áudio compartilhado (se houver src será usado, caso contrário simulamos o estado)
+  // Áudio compartilhado
   let audio = new Audio();
+  audio.crossOrigin = 'anonymous'; // caso use URLs externas
   let isSimulatedPlaying = false;
   let activeLivroButton = null;
+  let luaAnimation = null;
 
   function showEstante() {
     if (introducao) introducao.style.display = 'none';
@@ -56,19 +58,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // preparar áudio
     if (audioSrc) {
-      audio.src = audioSrc;
-      audio.load();
+      try {
+        audio.pause();
+      } catch (e) {}
+      audio = new Audio(audioSrc);
+      audio.crossOrigin = 'anonymous';
+      audio.preload = 'auto';
+      attachAudioHandlers();
     } else {
-      // nenhum arquivo de áudio fornecido — limpar src para evitar reprodução acidental
-      audio.src = '';
+      // sem arquivo de áudio — limpar src e simular
+      try { audio.pause(); } catch (e) {}
+      audio = new Audio();
       isSimulatedPlaying = false;
       updatePlayUI(false);
+      detachAudioHandlers();
     }
 
     // mostrar página
     if (paginaLivro) {
       paginaLivro.style.display = 'block';
       paginaLivro.setAttribute('aria-hidden', 'false');
+      // focar para acessibilidade
+      paginaLivro.setAttribute('tabindex', '-1');
       paginaLivro.focus && paginaLivro.focus();
     }
   }
@@ -80,9 +91,10 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {
       // ignore
     }
-    audio.src = '';
+    try { audio.src = ''; } catch (e) {}
     isSimulatedPlaying = false;
     updatePlayUI(false);
+    stopLuaAnimation();
 
     if (paginaLivro) {
       paginaLivro.style.display = 'none';
@@ -100,17 +112,47 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!playBtn) return;
     playBtn.setAttribute('aria-pressed', String(!!playing));
     playBtn.textContent = playing ? '⏸' : '▶︎';
-    if (luaMusica) {
-      if (playing) luaMusica.classList.add('playing');
-      else luaMusica.classList.remove('playing');
-    }
+    if (playing) startLuaAnimation();
+    else stopLuaAnimation();
   }
 
-  // eventos
+  // animação da lua usando Web Animations API
+  function startLuaAnimation() {
+    if (!luaMusica) return;
+    // se já existe animação ativa, não recriar
+    if (luaAnimation) return;
+
+    // pequena oscilação + brilho sutil
+    luaAnimation = luaMusica.animate(
+      [
+        { transform: 'translateY(0px) scale(1)', opacity: 0.9, filter: 'blur(0px) drop-shadow(0 0 6px rgba(255,255,255,0.05))' },
+        { transform: 'translateY(-8px) scale(1.03)', opacity: 1, filter: 'blur(0.4px) drop-shadow(0 0 12px rgba(255,255,255,0.12))' }
+      ],
+      {
+        duration: 1600,
+        iterations: Infinity,
+        direction: 'alternate',
+        easing: 'ease-in-out'
+      }
+    );
+    luaMusica.classList.add('playing');
+  }
+
+  function stopLuaAnimation() {
+    if (!luaMusica) return;
+    if (luaAnimation) {
+      try { luaAnimation.cancel(); } catch (e) {}
+      luaAnimation = null;
+    }
+    luaMusica.classList.remove('playing');
+  }
+
+  // Eventos
   if (entrarBtn) {
     entrarBtn.addEventListener('click', (e) => {
       e.preventDefault();
       showEstante();
+      entrarBtn.blur();
     });
   }
 
@@ -134,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (playBtn) {
     playBtn.addEventListener('click', async () => {
       // se houver src, use o <audio>
-      if (audio.src) {
+      if (audio && audio.src) {
         try {
           if (audio.paused) {
             await audio.play();
@@ -144,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updatePlayUI(false);
           }
         } catch (err) {
-          // reprodução falhou (sem permissões ou sem arquivo) — simular UI
+          // reprodução falhou — simular estado visual
           isSimulatedPlaying = !isSimulatedPlaying;
           updatePlayUI(isSimulatedPlaying);
         }
@@ -156,11 +198,38 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // quando o áudio terminar, resetar UI
-  audio.addEventListener('ended', () => {
+  // conectar eventos do audio para refletir estado da UI
+  function attachAudioHandlers() {
+    if (!audio) return;
+    audio.removeEventListener('play', onAudioPlay);
+    audio.removeEventListener('pause', onAudioPause);
+    audio.removeEventListener('ended', onAudioEnded);
+    audio.addEventListener('play', onAudioPlay);
+    audio.addEventListener('pause', onAudioPause);
+    audio.addEventListener('ended', onAudioEnded);
+  }
+
+  function detachAudioHandlers() {
+    if (!audio) return;
+    audio.removeEventListener('play', onAudioPlay);
+    audio.removeEventListener('pause', onAudioPause);
+    audio.removeEventListener('ended', onAudioEnded);
+  }
+
+  function onAudioPlay() {
+    isSimulatedPlaying = false;
+    updatePlayUI(true);
+  }
+
+  function onAudioPause() {
+    // se terminou, handled by 'ended'
+    updatePlayUI(false);
+  }
+
+  function onAudioEnded() {
     isSimulatedPlaying = false;
     updatePlayUI(false);
-  });
+  }
 
   // Inicialização: esconder estante e página de livro até serem usados (caso HTML já não tenha)
   if (estante) {
