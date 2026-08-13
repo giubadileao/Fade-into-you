@@ -1,2 +1,2 @@
-# Fade-into-you
-Se eu pudesse transformar meus pensamentos em uma música...
+# Get ready to enter my thoughts.
+Some stories are better felt than read.
